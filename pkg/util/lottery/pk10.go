@@ -11,7 +11,7 @@ type Pk10 struct {
 	bets models.Bet
 }
 
-func NewPk10(result []string) BetInterface{
+func NewPk10(result []string) *Pk10{
 	return &Pk10{result:result}
 }
 
