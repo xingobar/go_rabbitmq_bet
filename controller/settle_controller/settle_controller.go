@@ -52,7 +52,6 @@ func (c *SettleController) Settle(ctx *gin.Context) {
 
 	queueName := setting.GetQueueNameByLottery(lotteryId)
 
-	channel := make(chan float64)
 	for page := 1; page <= total; page++ {
 		bets, err := c.lotteryService.GetByPaginator(lotteryId, round, page)
 		if err != nil {
@@ -65,19 +64,8 @@ func (c *SettleController) Settle(ctx *gin.Context) {
 
 		// consume message
 		fmt.Println("consume message ....")
-		rabbitmq.ConsumeBets(queueName, result, channel)
+		rabbitmq.ConsumeBets(queueName, result)
 	}
 
-	var sum = 0.0
-	var counter = 0
-	for v := range channel {
-		sum += v
-		counter ++
-		if counter >= count {
-			break
-		}
-	}
-	fmt.Println("finally sum: ", sum)
-	close(channel)
 	fmt.Println(count)
 }

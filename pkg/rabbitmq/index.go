@@ -3,6 +3,7 @@ package rabbitmq
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/jinzhu/gorm"
 	"github.com/streadway/amqp"
 	"go_rabbitmq_bet/models"
 	"go_rabbitmq_bet/pkg/setting"
@@ -90,7 +91,7 @@ func GetQueueMessage(queueName string) *amqp.Delivery{
 	@param string queueName - 隊列名稱
 	@param []string result - 結果
  */
-func ConsumeBets(queueName string, result []string, channel chan float64){
+func ConsumeBets(queueName string, result []string){
 	msg := GetQueueMessage(queueName)
 	if msg != nil {
 		fmt.Println("consume bet")
@@ -110,7 +111,7 @@ func ConsumeBets(queueName string, result []string, channel chan float64){
 
 		// 比對是否贏錢
 		if instance != nil && bets != nil{
-			go func(channel chan float64) {
+			go func() {
 				for _, bet := range bets {
 					win := instance.Settle(bet)
 					var amount float64
@@ -125,10 +126,13 @@ func ConsumeBets(queueName string, result []string, channel chan float64){
 							"status": 2,
 							"win_amount": amount,
 						})
-					channel <- amount
+
+					models.Db.Model(&models.User{}).
+						Where("id = ?", bet.UserId).
+						Update("usuable_amount", gorm.Expr("usuable_amount + (?)", amount))
 				}
 				fmt.Println("settle success ....")
-			}(channel)
+			}()
 		}
 	}
 }
