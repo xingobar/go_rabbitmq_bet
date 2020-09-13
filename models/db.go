@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	"os"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var Db *gorm.DB
