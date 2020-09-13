@@ -1,6 +1,7 @@
 package rabbitmq
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/streadway/amqp"
 	"go_rabbitmq_bet/pkg/setting"
@@ -50,10 +51,14 @@ func QueueDeclare(name string) {
 	@string queueName - 隊列名稱
 	@string message - 訊息
  */
-func Publish(queueName string, message string) {
-	err := RabbitMq.channel.Publish("", queueName, false, false, amqp.Publishing{
+func Publish(queueName string, message interface{}) {
+	b, err := json.Marshal(message)
+	if err != nil {
+		fmt.Printf("message json encode error")
+	}
+	err = RabbitMq.channel.Publish("", queueName, false, false, amqp.Publishing{
 		ContentType: "text/plain",
-		Body: []byte(message),
+		Body: b,
 	})
 	if err != nil {
 		fmt.Println("publish error")
@@ -61,17 +66,30 @@ func Publish(queueName string, message string) {
 }
 
 /**
+	取得隊列 訊息
+	@param string queueName - 隊列名稱
+ */
+func GetQueueMessage(queueName string) *amqp.Delivery{
+	msg, ok, err := RabbitMq.channel.Get(queueName, true)
+	if err != nil {
+		fmt.Println("consume message error: ", err)
+		return nil
+	}
+
+	if !ok {
+		fmt.Println("do not get message")
+		return nil
+	}
+	return &msg
+}
+
+/**
 	消費queue
 	@string queueName - 隊列名稱
  */
-func Consume(queueName string) {
-	msg, err := RabbitMq.channel.Consume(queueName, "", true, false, false, false, nil)
-	if err != nil {
-		fmt.Println("consume message error: ", err)
-	} else {
-		for d := range msg {
-			// TODO: New Lottery
-			fmt.Printf("receive message: %s", d.Body)
-		}
+func ConsumeBets(queueName string){
+	msg := GetQueueMessage(queueName)
+	if msg != nil {
+		fmt.Println("consume bet")
 	}
 }

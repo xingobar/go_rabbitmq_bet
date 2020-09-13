@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"go_rabbitmq_bet/models"
 	"go_rabbitmq_bet/repository"
 )
 
@@ -32,4 +33,19 @@ func (s *LotteryService) GetTotalUnsettleBet(lotteryId string, round string) (in
 	}
 
 	return count, nil
+}
+
+/**
+	根據分頁取得注單
+	@param string lotteryId - 彩票編號
+	@param string round - 期數
+	@param int page - 頁碼
+ */
+func (s *LotteryService) GetByPaginator(lotteryId string, round string, page int) ([]models.Bet, error){
+	bets, query := s.betRepository.GetByPaginator(lotteryId, round, page)
+
+	if err := query.Error; err != nil {
+		return nil, err
+	}
+	return bets, nil
 }
