@@ -9,6 +9,7 @@ import (
 	"go_rabbitmq_bet/resource"
 	"go_rabbitmq_bet/service"
 	"math"
+	"strings"
 )
 
 type SettleController struct {
@@ -47,7 +48,11 @@ func (c *SettleController) Settle(ctx *gin.Context) {
 	fmt.Printf("total data %d \n", count)
 	fmt.Printf("total page %d \n", total)
 
+	result := strings.Split(ball, ",")
+
 	queueName := setting.GetQueueNameByLottery(lotteryId)
+
+	channel := make(chan float64)
 	for page := 1; page <= total; page++ {
 		bets, err := c.lotteryService.GetByPaginator(lotteryId, round, page)
 		if err != nil {
@@ -60,8 +65,19 @@ func (c *SettleController) Settle(ctx *gin.Context) {
 
 		// consume message
 		fmt.Println("consume message ....")
-		rabbitmq.ConsumeBets(queueName)
+		rabbitmq.ConsumeBets(queueName, result, channel)
 	}
 
+	var sum = 0.0
+	var counter = 0
+	for v := range channel {
+		sum += v
+		counter ++
+		if counter >= count {
+			break
+		}
+	}
+	fmt.Println("finally sum: ", sum)
+	close(channel)
 	fmt.Println(count)
 }

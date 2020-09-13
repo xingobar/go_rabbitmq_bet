@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/streadway/amqp"
+	"go_rabbitmq_bet/models"
 	"go_rabbitmq_bet/pkg/setting"
+	"go_rabbitmq_bet/pkg/util/lottery"
 	"os"
 )
 
@@ -85,11 +87,48 @@ func GetQueueMessage(queueName string) *amqp.Delivery{
 
 /**
 	消費queue
-	@string queueName - 隊列名稱
+	@param string queueName - 隊列名稱
+	@param []string result - 結果
  */
-func ConsumeBets(queueName string){
+func ConsumeBets(queueName string, result []string, channel chan float64){
 	msg := GetQueueMessage(queueName)
 	if msg != nil {
 		fmt.Println("consume bet")
+		var bets []models.Bet
+		err := json.Unmarshal(msg.Body, &bets)
+		if err != nil {
+			fmt.Println("json decode err: ", err)
+			return
+		}
+
+		var instance lottery.BetInterface
+		switch queueName {
+			case "pk10":
+				instance = lottery.NewPk10(result)
+				break
+		}
+
+		// 比對是否贏錢
+		if instance != nil && bets != nil{
+			go func(channel chan float64) {
+				for _, bet := range bets {
+					win := instance.Settle(bet)
+					var amount float64
+					if win {
+						amount = bet.WinAmount
+					} else {
+						amount = float64(-bet.BetAmount)
+					}
+					models.Db.Model(&models.Bet{}).
+						Where("id = ? ", bet.ID).
+						Update(map[string]interface{} {
+							"status": 2,
+							"win_amount": amount,
+						})
+					channel <- amount
+				}
+				fmt.Println("settle success ....")
+			}(channel)
+		}
 	}
 }

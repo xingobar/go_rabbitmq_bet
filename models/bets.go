@@ -8,8 +8,8 @@ type Bet struct {
 	LotteryId int `gorm:"column:lottery_id" json:"lottery_id"`
 	RoundId int `gorm:"column:round_id" json:"round_id"`
 	BetAmount int `gorm:"column:bet_amount" json:"bet_amount"`
-	ReturnAmount float32 `gorm:"column:return_amount" json:"return_amount"`
-	WinAmount float32 `gorm:"column:win_amount" json:"win_amount"`
+	ReturnAmount float64 `gorm:"column:return_amount" json:"return_amount"`
+	WinAmount float64 `gorm:"column:win_amount" json:"win_amount"`
 	Status int `gorm:"column:status" json:"status"`
 	OrderId string `gorm:"column:order_id" json:"order_id"`
 	BetDate string `gorm:"column:bet_date" json:"bet_date"`
