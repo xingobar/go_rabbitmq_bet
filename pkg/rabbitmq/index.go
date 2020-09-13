@@ -3,6 +3,7 @@ package rabbitmq
 import (
 	"fmt"
 	"github.com/streadway/amqp"
+	"go_rabbitmq_bet/pkg/setting"
 	"os"
 )
 
@@ -10,7 +11,6 @@ import (
 var RabbitMq = struct {
 	conn *amqp.Connection
 	channel *amqp.Channel
-	queueName string
 }{}
 
 func init() {
@@ -29,20 +29,29 @@ func init() {
 	if err != nil {
 		fmt.Println("創建 channel 失敗")
 	}
+
+	// 註冊 queue
+	for _, name := range setting.QueueName {
+		QueueDeclare(name)
+	}
 }
 
 // queue 宣告
 func QueueDeclare(name string) {
-	queue, err := RabbitMq.channel.QueueDeclare(name, false, false, false, false, nil)
+	fmt.Println("queue-" + name, " register ....")
+	_, err := RabbitMq.channel.QueueDeclare(name, false, false, false, false, nil)
 	if err != nil {
 		panic("create queue failed")
 	}
-	RabbitMq.queueName = queue.Name
 }
 
-// publish 訊息
-func Publish(message string) {
-	err := RabbitMq.channel.Publish("", RabbitMq.queueName, false, false, amqp.Publishing{
+/**
+	publish 訊息
+	@string queueName - 隊列名稱
+	@string message - 訊息
+ */
+func Publish(queueName string, message string) {
+	err := RabbitMq.channel.Publish("", queueName, false, false, amqp.Publishing{
 		ContentType: "text/plain",
 		Body: []byte(message),
 	})
@@ -51,8 +60,12 @@ func Publish(message string) {
 	}
 }
 
-func Consume(name string) {
-	msg, err := RabbitMq.channel.Consume(name, "", true, false, false, false, nil)
+/**
+	消費queue
+	@string queueName - 隊列名稱
+ */
+func Consume(queueName string) {
+	msg, err := RabbitMq.channel.Consume(queueName, "", true, false, false, false, nil)
 	if err != nil {
 		fmt.Println("consume message error: ", err)
 	} else {

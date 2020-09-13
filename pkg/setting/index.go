@@ -1,15 +1,17 @@
 package setting
 
-var LotteryMap = map[string] string {
+var LotteryQueueMap = map[string] string {
 	"1": "pk10",
 	"8": "pk10",
 }
 
+var QueueName = []string {"pk10"}
+
 // 取得彩種 map
-func GetLotteryMap(key string) string {
-	val, ok := LotteryMap[key]
+func GetQueueNameByLottery(key string) string {
+	val, ok := LotteryQueueMap[key]
 	if !ok {
-		return LotteryMap["1"]
+		return LotteryQueueMap["1"]
 	}
 	return val
 }
