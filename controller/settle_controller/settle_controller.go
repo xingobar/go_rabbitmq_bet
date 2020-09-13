@@ -26,10 +26,11 @@ func (c *SettleController) Settle(ctx *gin.Context) {
 	fmt.Println("round: ", round)
 	fmt.Println("ball: ", ball)
 
-	bet, err := c.lotteryService.FetchByFilter(lotteryId, round)
+	// 先取得未結注單
+	count, err := c.lotteryService.GetTotalUnsettleBet(lotteryId, round)
 	if err != nil {
 		resource.ErrorResponse(ctx, e.NOT_FOUND)
 		return
 	}
-	fmt.Println(bet)
+	fmt.Println(count)
 }

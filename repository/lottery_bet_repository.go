@@ -16,9 +16,12 @@ func NewLotteryBetRepository() *LotteryBetRepository{
 /**
 	取得單一比注單
  */
-func (repository *LotteryBetRepository) FetchByFilter(lotteryId string, round string) (models.Bet, *gorm.DB){
-	var Bets models.Bet
-	query := models.Db.Where("lottery_id = ? AND round = ?", lotteryId, round).First(&Bets)
-	return Bets, query
+func (repository *LotteryBetRepository) GetTotalUnsettleBet(lotteryId string, round string) (int, *gorm.DB){
+	var count int
+	query := models.Db.Model(&models.Bet{}).Where("lottery_id = ? AND round = ? AND status = 1",
+		lotteryId, round).
+		Order("created_at DESC").
+		Count(&count)
+	return count, query
 }
 
