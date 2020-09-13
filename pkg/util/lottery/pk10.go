@@ -1,6 +1,7 @@
 package lottery
 
 import (
+	"fmt"
 	"go_rabbitmq_bet/models"
 	"strconv"
 )
@@ -27,7 +28,11 @@ func (pk10 *Pk10) Settle(bet models.Bet) bool {
 
 // 單球
 func (pk10 *Pk10) OneToTen(bet models.Bet) bool{
-	b := pk10.result[bet.Position]
-	ball, _ := strconv.Atoi(b)
-	return ball == bet.Ball
+	b, err := strconv.Atoi(pk10.result[bet.Position - 1])
+	if err != nil {
+		return false
+	}
+	ball := bet.Ball
+	fmt.Println("postion: ", bet.Position, " ball: ", ball , " result: ", b, " bool: ", ball == b)
+	return ball == b
 }

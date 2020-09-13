@@ -18,14 +18,14 @@ type Bet struct {
 	Title string `gorm:"column:title" json:"title"`
 	Detail string `gorm:"column:detail" json:"detail"`
 	OddsId int `gorm:"column:odds_id" json:"odds_id"`
-	Odds float32 `gorm:"column:odds" json:"odds"`
+	Odds float64 `gorm:"column:odds" json:"odds"`
 	Round string `gorm:"column:round" json:"round"`
 	Ball int `gorm:"column:ball" json:"ball"`
 	Position int `gorm:"column:position" json:"position"`
 	BetType int `gorm:"column:bet_type" json:"bet_type"`
 	InfoId int `gorm:"column:info_id" json:"info_id"`
 	UseRound int `gorm:"column:use_round" json:"use_round"`
-	RealWin	float32 `gorm:"column:real_win" json:"real_win"`
+	RealWin	float64 `gorm:"column:real_win" json:"real_win"`
 }
 
 func (Bet) TableName() string {

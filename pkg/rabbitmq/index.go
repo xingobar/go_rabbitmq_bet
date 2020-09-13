@@ -116,7 +116,7 @@ func ConsumeBets(queueName string, result []string){
 					win := instance.Settle(bet)
 					var amount float64
 					if win {
-						amount = bet.WinAmount
+						amount = float64(bet.BetAmount) * bet.Odds
 					} else {
 						amount = float64(-bet.BetAmount)
 					}
